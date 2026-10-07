@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Underground Hooligans</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#080608;--bg2:#0e0b10;--card:#12101a;--card2:#1a1525;
+--red:#a01020;--red2:#d42040;--red3:#ff3050;
+--purple:#6a1b9a;--purple2:#9c27b0;--purple3:#ce93d8;
+--text:#c8bfcf;--text2:#7a7084;--border:#251e30;--border2:#352a42;
+}
+body{
+background:var(--bg);color:var(--text);
+font-family:Georgia,'Times New Roman',serif;
+min-height:100vh;-webkit-tap-highlight-color:transparent;
+}
+body::before{
+content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+background:
+radial-gradient(ellipse at 15% 10%,rgba(100,10,20,.1) 0%,transparent 55%),
+radial-gradient(ellipse at 85% 90%,rgba(60,10,90,.08) 0%,transparent 55%);
+}
+
+/* AUTH SCREEN */
+.auth-screen{
+position:fixed;inset:0;z-index:500;
+background:var(--bg);
+display:flex;align-items:center;justify-content:center;
+padding:20px;
+}
+.auth-screen.hidden{display:none}
+.auth-box{
+width:100%;max-width:400px;text-align:center;
+animation:mIn .4s ease;
+}
+.auth-box .pentagram{font-size:3rem;color:var(--red);opacity:.5;display:block;margin-bottom:12px;filter:drop-shadow(0 0 12px rgba(160,16,32,.4))}
+.auth-box .logo{font-size:1.6rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px;
+background:linear-gradient(135deg,var(--red2),var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.auth-box .tagline{font-size:.65rem;color:var(--text2);letter-spacing:5px;margin-bottom:28px;text-transform:uppercase;font-style:italic}
+.auth-box h2{font-size:1rem;color:var(--red2);letter-spacing:2px;margin-bottom:16px;text-transform:uppercase}
+.auth-box .fg{margin-bottom:12px;text-align:left}
+.auth-box .fg label{display:block;font-size:.7rem;color:var(--text2);margin-bottom:4px;letter-spacing:2px;text-transform:uppercase}
+.auth-box .fg input{
+width:100%;padding:11px 14px;background:var(--card);border:1px solid var(--border);
+border-radius:6px;color:var(--text);font-size:.9rem;outline:none;font-family:inherit;
+}
+.auth-box .fg input:focus{border-color:var(--red)}
+.auth-box .fg input::placeholder{color:#4a4055;font-style:italic}
+.auth-box .btn-full{width:100%;margin-top:8px}
+.auth-switch{margin-top:16px;font-size:.8rem;color:var(--text2)}
+.auth-switch a{color:var(--purple3);cursor:pointer;text-decoration:underline}
+.auth-members{margin-top:24px;padding-top:18px;border-top:1px solid var(--border)}
+.auth-members h4{font-size:.7rem;color:var(--text2);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase}
+.member-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.member-chip{
+padding:8px 16px;background:var(--card);border:1px solid var(--border);
+border-radius:6px;font-size:.8rem;color:var(--text);cursor:pointer;
+transition:all .2s;font-family:inherit;
+}
+.member-chip:hover{border-color:var(--red);color:var(--red2)}
+.auth-err{color:var(--red2);font-size:.78rem;margin-top:8px;min-height:20px}
+
+/* HEADER */
+header{
+text-align:center;padding:24px 16px 18px;position:relative;
+border-bottom:1px solid var(--border);
+background:linear-gradient(180deg,rgba(80,10,20,.06) 0%,transparent 100%);
+}
+header::after{
+content:'';position:absolute;bottom:-1px;left:0;width:100%;height:1px;
+background:linear-gradient(90deg,transparent,var(--red),var(--purple),var(--red),transparent);
+}
+.h-top{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.h-logo{
+font-size:1.4rem;font-weight:900;letter-spacing:4px;text-transform:uppercase;
+background:linear-gradient(135deg,var(--red2),var(--purple2),var(--red2));
+background-size:200% 200%;
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+animation:shimmer 6s ease infinite;
+}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.h-user{
+display:flex;align-items:center;gap:8px;
+padding:6px 14px;background:var(--card);border:1px solid var(--border);
+border-radius:20px;font-size:.75rem;color:var(--purple3);
+}
+.h-user .avatar{
+width:22px;height:22px;border-radius:50%;
+background:linear-gradient(135deg,var(--red),var(--purple));
+display:flex;align-items:center;justify-content:center;
+font-size:.6rem;color:#fff;font-weight:700;
+}
+.h-logout{
+background:none;border:none;color:var(--text2);cursor:pointer;
+font-size:.7rem;font-family:inherit;margin-left:4px;
+padding:2px 6px;border-radius:3px;
+}
+.h-logout:hover{color:var(--red2)}
+.h-tagline{
+font-size:.65rem;color:var(--text2);letter-spacing:5px;margin-top:6px;
+text-transform:uppercase;font-style:italic;
+}
+
+/* GENRE TAGS */
+.genre-bar{
+padding:12px 16px;max-width:1200px;margin:0 auto;
+overflow-x:auto;white-space:nowrap;
+-webkit-overflow-scrolling:touch;
+scrollbar-width:none;
+}
+.genre-bar::-webkit-scrollbar{display:none}
+.genre-bar-inner{display:flex;gap:6px;align-items:center}
+.g-tag{
+padding:7px 14px;background:var(--card);border:1px solid var(--border);
+border-radius:20px;font-size:.72rem;color:var(--text2);cursor:pointer;
+font-family:inherit;white-space:nowrap;transition:all .2s;flex-shrink:0;
+letter-spacing:1px;
+}
+.g-tag:hover{border-color:var(--purple);color:var(--purple3)}
+.g-tag.active{
+background:rgba(160,16,32,.12);color:var(--red2);border-color:var(--red);
+}
+.g-tag.g-all{letter-spacing:2px;text-transform:uppercase;font-size:.65rem}
+.g-add{
+padding:7px 12px;background:none;border:1px dashed var(--border2);
+border-radius:20px;font-size:.72rem;color:var(--text2);cursor:pointer;
+font-family:inherit;white-space:nowrap;transition:all .2s;flex-shrink:0;
+}
+.g-add:hover{border-color:var(--purple);color:var(--purple3)}
+
+/* TOOLBAR */
+.toolbar{
+display:flex;gap:8px;padding:0 16px 12px;max-width:1200px;margin:0 auto;
+flex-wrap:wrap;align-items:center;
+}
+.search-box{flex:1;min-width:160px;position:relative}
+.search-box input{
+width:100%;padding:10px 12px 10px 34px;
+background:var(--card);border:1px solid var(--border);border-radius:6px;
+color:var(--text);font-size:.85rem;outline:none;font-family:inherit;
+transition:border-color .3s;
+}
+.search-box input::placeholder{color:var(--text2);font-style:italic}
+.search-box input:focus{border-color:var(--red)}
+.search-box .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.75rem;pointer-events:none}
+.sel{
+padding:10px 12px;background:var(--card);border:1px solid var(--border);
+border-radius:6px;color:var(--text);font-size:.78rem;outline:none;
+font-family:inherit;cursor:pointer;
+}
+.sel:focus{border-color:var(--red)}
+.sel option{background:var(--card);color:var(--text)}
+.btn{
+padding:10px 18px;border:none;border-radius:6px;font-size:.78rem;
+font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;
+font-family:inherit;transition:all .25s;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{
+background:linear-gradient(135deg,var(--red),var(--purple));color:#eee;
+box-shadow:0 2px 10px rgba(160,16,32,.2);
+}
+.btn-primary:hover{box-shadow:0 4px 18px rgba(160,16,32,.35)}
+.count{font-size:.75rem;color:var(--text2);padding:0 4px;white-space:nowrap;font-style:italic}
+
+/* GRID */
+.grid{
+display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+gap:16px;padding:8px 16px 30px;max-width:1200px;margin:0 auto;
+}
+
+/* CARD */
+.card{
+background:var(--card);border:1px solid var(--border);border-radius:8px;
+overflow:hidden;cursor:pointer;transition:all .3s;position:relative;
+}
+.card:hover{
+transform:translateY(-3px);border-color:var(--red);
+box-shadow:0 6px 24px rgba(0,0,0,.4),0 0 15px rgba(160,16,32,.1);
+}
+.card.dimmed{opacity:.35;filter:grayscale(.5)}
+.card-img{width:100%;height:210px;object-fit:cover;display:block;background:var(--bg2)}
+.card-ph{
+width:100%;height:210px;display:flex;align-items:center;justify-content:center;
+background:linear-gradient(135deg,#0c0810,#100a14);
+color:var(--red);font-size:3rem;opacity:.08;
+}
+.card-body{padding:12px 14px}
+.card-genre{
+display:inline-block;padding:2px 9px;border-radius:3px;font-size:.58rem;
+font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+background:rgba(160,16,32,.1);color:var(--red2);
+border-left:2px solid var(--red);margin-bottom:6px;
+}
+.card-title{font-size:.95rem;font-weight:700;color:#e8e0f0;margin-bottom:2px;line-height:1.3}
+.card-band{font-size:.78rem;color:var(--purple3);font-style:italic}
+.card-desc{
+font-size:.72rem;color:var(--text2);margin-top:5px;line-height:1.5;
+display:-webkit-box;-webkit-line-clam:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-htag{font-size:.52rem;color:#555;background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;margin-left:5px;vertical-align:middle;letter-spacing:1px}
+.card-bot{
+display:flex;align-items:center;justify-content:space-between;
+margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.03);
+}
+.card-yr{font-size:.68rem;color:var(--text2)}
+.card-sym{font-size:.75rem;color:var(--red);opacity:.15}
+.card-owner{font-size:.6rem;color:var(--purple3);opacity:.5}
+
+/* OVERLAY */
+.ov{
+display:none;position:fixed;inset:0;background:rgba(5,3,8,.92);
+z-index:100;justify-content:center;align-items:flex-start;
+overflow-y:auto;padding:20px 10px;-webkit-overflow-scrolling:touch;
+backdrop-filter:blur(3px);
+}
+.ov.open{display:flex}
+
+/* MODAL */
+.modal{
+background:linear-gradient(170deg,#14101e,#100c16);
+border:1px solid var(--border);border-radius:10px;
+width:100%;max-width:540px;padding:26px 20px;margin:auto;
+position:relative;animation:mIn .3s ease;
+box-shadow:0 16px 50px rgba(0,0,0,.5);
+}
+@keyframes mIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.mc{
+position:absolute;top:12px;right:12px;width:30px;height:30px;
+background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:50%;
+color:var(--text2);font-size:.85rem;cursor:pointer;
+display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.mc:hover{color:var(--red2);border-color:var(--red)}
+.modal h2{
+font-size:1rem;font-weight:800;margin-bottom:18px;
+color:var(--red2);letter-spacing:2px;text-transform:uppercase;
+}
+.modal h2::before{content:'⛧ ';font-size:.75rem;opacity:.4}
+.modal h2::after{content:' ⛧';font-size:.75rem;opacity:.4}
+
+/* FORM */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.68rem;color:var(--text2);margin-bottom:4px;letter-spacing:2px;text-transform:uppercase}
+.fg input,.fg textarea{
+width:100%;padding:10px 12px;background:rgba(0,0,0,.4);
+border:1px solid var(--border);border-radius:5px;
+color:var(--text);font-size:.88rem;outline:none;font-family:inherit;transition:border-color .3s;
+}
+.fg input::placeholder,.fg textarea::placeholder{color:#4a4055;font-style:italic}
+.fg input:focus,.fg textarea:focus{border-color:var(--red)}
+.fg textarea{min-height:70px;resize:vertical}
+.fg small{font-size:.62rem;color:#4a4055;margin-top:2px;display:block;font-style:italic}
+.form-row{display:flex;gap:10px}
+.form-row .fg{flex:1}
+
+/* IMAGE */
+.img-tabs{display:flex;gap:0;margin-bottom:8px}
+.img-tabs button{
+flex:1;padding:7px;background:rgba(0,0,0,.3);border:1px solid var(--border);
+color:var(--text2);font-family:inherit;font-size:.68rem;cursor:pointer;
+letter-spacing:1px;text-transform:uppercase;transition:all .2s;
+}
+.img-tabs button:first-child{border-radius:5px 0 0 5px}
+.img-tabs button:last-child{border-radius:0 5px 5px 0}
+.img-tabs button.active{background:rgba(160,16,32,.12);color:var(--red2);border-color:var(--red)}
+.img-section{display:none}
+.img-section.active{display:block}
+.up-area{
+border:1px dashed var(--border2);border-radius:6px;padding:20px;
+text-align:center;cursor:pointer;transition:all .3s;
+background:rgba(0,0,0,.25);position:relative;
+}
+.up-area:hover{border-color:var(--purple);background:rgba(106,27,154,.04)}
+.up-area .ui{font-size:1.5rem;display:block;margin-bottom:4px;opacity:.35}
+.up-area .ut{font-size:.7rem;color:var(--text2)}
+.up-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.img-prev{max-width:100%;max-height:160px;border-radius:6px;margin-top:8px;display:none;object-fit:cover;border:1px solid var(--border)}
+
+.btn-full{width:100%;padding:12px;font-size:.85rem;margin-top:6px}
+
+/* LINKS */
+.lw{display:flex;flex-direction:column;gap:5px}
+.lr{display:flex;gap:5px;align-items:center}
+.lr input{flex:1}
+.lr-rm{
+width:28px;height:28px;background:rgba(0,0,0,.3);border:1px solid var(--border);
+border-radius:4px;color:var(--text2);cursor:pointer;font-size:.75rem;
+display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.lr-rm:hover{color:var(--red2);border-color:var(--red)}
+.al-btn{
+background:none;border:1px dashed var(--border);border-radius:4px;
+color:var(--text2);padding:7px;cursor:pointer;font-size:.68rem;
+font-family:inherit;margin-top:3px;
+}
+.al-btn:hover{border-color:var(--purple);color:var(--purple3)}
+
+/* DETAIL */
+.d-cover{width:100%;max-height:320px;object-fit:cover;border-radius:6px;margin-bottom:16px;display:block;border:1px solid var(--border)}
+.d-ph{width:100%;height:180px;border-radius:6px;margin-bottom:16px;background:linear-gradient(135deg,#0c0810,#100a14);display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--red);opacity:.08}
+.d-genre,.d-year-tag{
+display:inline-block;padding:3px 10px;border-radius:3px;font-size:.62rem;
+font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;margin-right:5px;
+}
+.d-genre{background:rgba(160,16,32,.1);color:var(--red2);border-left:2px solid var(--red)}
+.d-year-tag{background:rgba(106,27,154,.08);color:var(--purple3);border-left:2px solid var(--purple)}
+.d-title{font-size:1.3rem;font-weight:800;color:#f0e8f8;margin-bottom:3px;line-height:1.3}
+.d-band{font-size:1rem;color:var(--purple3);font-style:italic;margin-bottom:3px}
+.d-owner-tag{font-size:.7rem;color:var(--text2);font-style:italic;margin-bottom:4px}
+.d-div{height:1px;background:linear-gradient(90deg,var(--red),var(--purple),transparent);margin:14px 0;opacity:.25}
+.d-desc{font-size:.88rem;color:var(--text);line-height:1.8;margin-bottom:16px;white-space:pre-wrap}
+.d-no{color:#3a3344;font-size:.82rem;margin-bottom:16px;font-style:italic}
+.d-links h4{font-size:.68rem;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.d-link{
+display:flex;align-items:center;gap:10px;padding:10px 12px;
+background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:6px;
+margin-bottom:6px;text-decoration:none;color:var(--text);
+font-size:.82rem;transition:all .2s;word-break:break-all;
+}
+.d-link:hover{border-color:var(--red);color:#fff;background:rgba(160,16,32,.06)}
+.d-link-i{font-size:1rem;flex-shrink:0}
+.d-acts{display:flex;gap:7px;margin-top:16px;flex-wrap:wrap}
+.d-acts .btn{flex:1;min-width:80px;text-align:center;font-size:.7rem;padding:9px 6px}
+.btn-ghost{background:rgba(255,255,255,.03);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--purple);color:var(--purple3)}
+.btn-danger{background:rgba(160,16,32,.08);color:var(--red2);border:1px solid rgba(160,16,32,.2)}
+.btn-danger:hover{background:rgba(160,16,32,.15)}
+
+/* CONFIRM */
+.c-box{text-align:center;padding:28px 18px}
+.c-box .ci{font-size:2.2rem;display:block;margin-bottom:10px;color:var(--red);filter:drop-shadow(0 0 8px rgba(160,16,32,.3))}
+.c-box h3{font-size:1rem;color:#e8e0f0;margin-bottom:5px}
+.c-box p{font-size:.82rem;color:var(--text2);margin-bottom:18px;font-style:italic}
+.c-btns{display:flex;gap:8px;justify-content:center}
+.c-btns .btn{min-width:90px}
+
+/* ADD GENRE MODAL */
+.ag-input{display:flex;gap:8px}
+.ag-input input{flex:1}
+
+/* EMPTY */
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px}
+.empty-i{font-size:3rem;display:block;margin-bottom:10px;color:var(--red);opacity:.08}
+.empty h3{font-size:.95rem;color:#3a3344;font-weight:600;margin-bottom:3px}
+.empty p{font-size:.78rem;color:#2a2434}
+
+/* TOAST */
+.tw{position:fixed;top:14px;right:14px;z-index:300;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{
+padding:10px 14px;background:var(--card);border:1px solid var(--border);
+border-left:3px solid var(--red);border-radius:6px;font-size:.78rem;color:var(--text);
+box-shadow:0 4px 18px rgba(0,0,0,.5);animation:tIn .3s ease;
+display:flex;align-items:center;gap:7px;max-width:280px;pointer-events:auto;
+}
+.toast.out{animation:tOut .25s ease forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateX(30px)}}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:8px 10px 20px}
+  .card-img,.card-ph{height:150px}
+  .card-body{padding:9px 10px}
+  .card-title{font-size:.82rem}
+  .card-band{font-size:.7rem}
+  .card-desc{-webkit-line-clam:1; font-size:.66rem}
+  .h-logo{font-size:1.1rem;letter-spacing:3px}
+  .toolbar{padding:0 10px 10px}
+  .genre-bar{padding:10px}
+  .modal{padding:18px 14px}
+  .form-row{flex-direction:column;gap:0}
+  .d-cover{max-height:220px}
+  .d-title{font-size:1.1rem}
+  header{padding:18px 10px 14px}
+  .d-acts{flex-direction:column}
+  .d-acts .btn{min-width:auto}
+  .h-user{font-size:.68rem;padding:5px 10px}
+  .auth-box .logo{font-size:1.3rem}
+}
+@media(min-width:601px) and (max-width:900px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+<div class="auth-box">
+  <span class="pentagram">⛧</span>
+  <div class="logo">Underground Hooligans</div>
+  <div class="tagline">☽ Cursed Album Archive ☾</div>
+
+  <div id="authLogin">
+    <h2>⛧ Enter The Crypt ⛧</h2>
+    <div class="fg">
+      <label>Your Name</label>
+      <input type="text" id="loginName" placeholder="Enter your name..." onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">⛧ Enter ⛧</button>
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-members" id="membersList"></div>
+  </div>
+</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none">
+
+<header>
+  <div class="h-top">
+    <div class="h-logo">⛧ Underground Hooligans ⛧</div>
+    <div class="h-user">
+      <span class="avatar" id="userAvatar"></span>
+      <span id="userName"></span>
+      <button class="h-logout" onclick="logout()">✕</button>
+    </div>
+  </div>
+  <div class="h-tagline">† Cursed Album Archive †</div>
+</header>
+
+<!-- GENRE BAR -->
+<div class="genre-bar">
+  <div class="genre-bar-inner" id="genreBar"></div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-box">
+    <span class="si">⛧</span>
+    <input type="text" id="search" placeholder="Search the abyss...">
+  </div>
+  <select class="sel" id="ownerF">
+    <option value="all">All Members</option>
+    <option value="mine">My Albums</option>
+  </select>
+  <select class="sel" id="visF">
+    <option value="all">All</option>
+    <option value="vis">Visible</option>
+    <option value="hid">Hidden</option>
+  </select>
+  <button class="btn btn-primary" onclick="openForm()">+ Add</button>
+  <span class="count" id="cnt">0</span>
+</div>
+
+<div class="grid" id="grid"></div>
+</div>
+
+<!-- FORM MODAL -->
+<div class="ov" id="fmOv" onclick="clIf(event,'fmOv')">
+<div class="modal" id="fmModal">
+  <button class="mc" onclick="clOv('fmOv')">✕</button>
+  <h2 id="fmT">Add Album</h2>
+  <form id="aForm" onsubmit="return saveA(event)">
+    <input type="hidden" id="eId">
+    <div class="fg">
+      <label>Album Cover</label>
+      <div class="img-tabs">
+        <button type="button" class="active" onclick="swImg('file',this)">📁 File</button>
+        <button type="button" onclick="swImg('url',this)">🔗 URL</button>
+      </div>
+      <div class="img-section active" id="fileS">
+        <div class="up-area">
+          <span class="ui">🖼️</span>
+          <span class="ut">Click or drop image</span>
+          <input type="file" id="fFile" accept="image/*" onchange="hFile(this)">
+        </div>
+      </div>
+      <div class="img-section" id="urlS">
+        <input type="url" id="fUrl" placeholder="https://..." oninput="pUrl(this.value)">
+      </div>
+      <img class="img-prev" id="imgP" alt="">
+      <input type="hidden" id="imgD">
+    </div>
+    <div class="fg"><label>Album Name *</label><input type="text" id="fName" required placeholder="Album title..."></div>
+    <div class="fg"><label>Band / Artist *</label><input type="text" id="fBand" required placeholder="Band name..."></div>
+    <div class="form-row">
+      <div class="fg"><label>Genre</label><input type="text" id="fGenre" placeholder="e.g. Black Metal"></div>
+      <div class="fg"><label>Year</label><input type="text" id="fYear" placeholder="e.g. 1994"></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="fDesc" placeholder="About this album..."></textarea></div>
+    <div class="fg">
+      <label>Links</label>
+      <div class="lw" id="linksC"></div>
+      <button type="button" class="al-btn" onclick="addLink()">+ Add Link</button>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full" id="subBtn">⛧ Summon Album ⛧</button>
+  </form>
+</div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="ov" id="dtOv" onclick="clIf(event,'dtOv')">
+<div class="modal" id="dtM"></div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="ov" id="cfOv" onclick="clIf(event,'cfOv')">
+<div class="modal">
+  <div class="c-box">
+    <span class="ci">☠</span>
+    <h3>Banish This Album?</h3>
+    <p id="cfTxt">This cannot be undone.</p>
+    <div class="c-btns">
+      <button class="btn btn-ghost" onclick="clOv('cfOv')">Cancel</button>
+      <button class="btn btn-danger" onclick="exDel()">☠ Banish</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD GENRE MODAL -->
+<div class="ov" id="agOv" onclick="clIf(event,'agOv')">
+<div class="modal">
+  <button class="mc" onclick="clOv('agOv')">✕</button>
+  <h2>Add Genre</h2>
+  <div class="fg">
+    <label>New Genre Name</label>
+    <div class="ag-input">
+      <input type="text" id="newGenre" placeholder="e.g. Sludge Metal" onkeydown="if(event.key==='Enter'){event.preventDefault();addGenre()}">
+      <button class="btn btn-primary" onclick="addGenre()">Add</button>
+    </div>
+  </div>
+  <div class="fg">
+    <label>Current Genres</label>
+    <div id="genreList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+  </div>
+</div>
+</div>
+
+<div class="tw" id="tw"></div>
+
+<script>
+// DATA
+const LS=k=>JSON.parse(localStorage.getItem(k)||'null');
+const SS=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+
+let albums=LS('uh_albums')||[];
+let members=LS('uh_members')||[];
+let genres=LS('uh_genres')||['Black Metal','Death Metal','Thrash Metal','Doom Metal','Gothic Metal','Grindcore','Black/Thrash','DSBM','Dark Ambient','Industrial','Punk','Heavy Metal'];
+let curUser=null;
+let delId=null;
+let activeGenre='all';
+
+function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36)}
+function esc(t){if(!t)return'';let d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function save(){SS('uh_albums',albums);SS('uh_members',members);SS('uh_genres',genres)}
+
+// AUTH
+function showAuth(){
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('mainApp').style.display='none';
+  renderMembers();
+}
+
+function renderMembers(){
+  const ml=document.getElementById('membersList');
+  if(!members.length){ml.innerHTML='';return;}
+  ml.innerHTML=`<h4>☽ Existing Members ☾</h4><div class="member-list">${
+    members.map(m=>`<button class="member-chip" onclick="quickLogin('${esc(m)}')">${esc(m)}</button>`).join('')
+  }</div>`;
+}
+
+function doLogin(){
+  const name=document.getElementById('loginName').value.trim();
+  if(!name){document.getElementById('authErr').textContent='Enter your name';return;}
+  if(name.length>30){document.getElementById('authErr').textContent='Name too long';return;}
+  curUser=name;
+  if(!members.includes(name)){members.push(name);save();}
+  enterApp();
+}
+
+function quickLogin(name){
+  curUser=name;
+  document.getElementById('loginName').value=name;
+  enterApp();
+}
+
+function enterApp(){
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('userName').textContent=curUser;
+  document.getElementById('userAvatar').textContent=curUser.charAt(0).toUpperCase();
+  renderGenreBar();
+  R();
+  toast('Welcome, '+curUser);
+}
+
+function logout(){
+  curUser=null;
+  showAuth();
+}
+
+// GENRE BAR
+function renderGenreBar(){
+  const bar=document.getElementById('genreBar');
+  const counts={};
+  albums.forEach(a=>{if(a.genre){const g=a.genre.toLowerCase();counts[g]=(counts[g]||0)+1;}});
+  
+  let html=`<button class="g-tag g-all${activeGenre==='all'?' active':''}" onclick="filterGenre('all')">All</button>`;
+  genres.forEach(g=>{
+    const c=counts[g.toLowerCase()]||0;
+    html+=`<button class="g-tag${activeGenre===g?' active':''}" onclick="filterGenre('${esc(g)}')">${esc(g)}${c?` (${c})`:''}</button>`;
+  });
+  html+=`<button class="g-add" onclick="openGenreModal()">+ Genre</button>`;
+  bar.innerHTML=html;
+}
+
+function filterGenre(g){
+  activeGenre=g;
+  renderGenreBar();
+  R();
+}
+
+function openGenreModal(){
+  opOv('agOv');
+  document.getElementById('newGenre').value='';
+  renderGenreList();
+}
+
+function renderGenreList(){
+  document.getElementById('genreList').innerHTML=genres.map(g=>
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--card);border:1px solid var(--border);border-radius:4px;font-size:.72rem;color:var(--text)">
+      ${esc(g)}<button onclick="removeGenre('${esc(g)}')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:.7rem;padding:0 2px">✕</button>
+    </span>`
+  ).join('');
+}
+
+function addGenre(){
+  const v=document.getElementById('newGenre').value.trim();
+  if(!v){toast('Enter genre name','⚠');return;}
+  if(genres.some(g=>g.toLowerCase()===v.toLowerCase())){toast('Genre already exists','⚠');return;}
+  genres.push(v);save();
+  document.getElementById('newGenre').value='';
+  renderGenreList();renderGenreBar();
+  toast('"'+v+'" genre added');
+}
+
+function removeGenre(g){
+  genres=genres.filter(x=>x!==g);save();
+  if(activeGenre===g){activeGenre='all';}
+  renderGenreList();renderGenreBar();R();
+}
+
+// RENDER
+function R(){
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  const vf=document.getElementById('visF').value;
+  const of2=document.getElementById('ownerF').value;
+  const f=albums.filter(a=>{
+    const mq=!q||(a.name+a.band+a.genre+a.desc+a.year+(a.owner||'')).toLowerCase().includes(q);
+    const mv=vf==='all'||(vf==='vis'&&a.visible)||(vf==='hid'&&!a.visible);
+    const mo=of2==='all'||(of2==='mine'&&a.owner===curUser);
+    const mg=activeGenre==='all'||(a.genre&&a.genre.toLowerCase()===activeGenre.toLowerCase());
+    return mq&&mv&&mo&&mg;
+  });
+  document.getElementById('cnt').textContent=f.length+' album'+(f.length!==1?'s':'');
+  const g=document.getElementById('grid');
+  if(!f.length){g.innerHTML='<div class="empty"><span class="empty-i">⛧</span><h3>The void is empty</h3><p>No albums found</p></div>';return;}
+  const sy=['⛧','☠','⛥','☽','♱','⸸'];
+  g.innerHTML=f.map(a=>{
+    const s1=sy[Math.floor(Math.random()*sy.length)];
+    const s2=sy[Math.floor(Math.random()*sy.length)];
+    const isOwner=a.owner===curUser;
+    return`<div class="card${a.visible?'':' dimmed'}" onclick="showD('${a.id}')">
+    ${a.image?`<img class="card-img" src="${esc(a.image)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=card-ph>⛧</div>'">`:'<div class="card-ph">⛧</div>'}
+    <div class="card-body">
+      ${a.genre?`<span class="card-genre">${esc(a.genre)}</span>`:''}
+      <div class="card-title">${esc(a.name)}${a.visible?'':'<span class="card-htag">HIDDEN</span>'}</div>
+      <div class="card-band">${esc(a.band)}</div>
+      ${a.desc?`<div class="card-desc">${esc(a.desc)}</div>`:''}
+      <div class="card-bot">
+        <span class="card-sym">${s1}</span>
+        <span class="card-owner">${esc(a.owner||'')}</span>
+        <span class="card-yr">${esc(a.year)||''}</span>
+        <span class="card-sym">${s2}</span>
+      </div>
+    </div></div>`;
+  }).join('');
+}
+
+document.getElementById('search').addEventListener('input',R);
+document.getElementById('visF').addEventListener('change',R);
+document.getElementById('ownerF').addEventListener('change',R);
+
+// IMAGE
+function swImg(m,b){
+  document.querySelectorAll('.img-tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('fileS').classList.toggle('active',m==='file');
+  document.getElementById('urlS').classList.toggle('active',m==='url');
+}
+function hFile(inp){
+  const file=inp.files[0];if(!file)return;
+  if(file.size>2*1024*1024){toast('Image too large (max 2MB)','⚠');return;}
+  const r=new FileReader();
+  r.onload=e=>{document.getElementById('imgD').value=e.target.result;const p=document.getElementById('imgP');p.src=e.target.result;p.style.display='block';document.getElementById('fUrl').value='';};
+  r.readAsDataURL(file);
+}
+function pUrl(u){
+  const p=document.getElementById('imgP');
+  if(u.trim()){p.src=u;p.style.display='block';document.getElementById('imgD').value='';}
+  else p.style.display='none';
+}
+
+// Drop
+const ua=document.querySelector('.up-area');
+ua.addEventListener('dragover',e=>{e.preventDefault();ua.style.borderColor='var(--purple)';});
+ua.addEventListener('dragleave',()=>ua.style.borderColor='');
+ua.addEventListener('drop',e=>{
+  e.preventDefault();ua.style.borderColor='';
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')){
+    const dt=new DataTransfer();dt.items.add(f);
+    document.getElementById('fFile').files=dt.files;
+    hFile(document.getElementById('fFile'));
+  }
+});
+
+// FORM
+function openForm(id){
+  const f=document.getElementById('aForm');f.reset();
+  document.getElementById('eId').value='';
+  document.getElementById('imgD').value='';
+  document.getElementById('imgP').style.display='none';
+  document.getElementById('imgP').src='';
+  document.getElementById('linksC').innerHTML='';
+  swImg('file',document.querySelector('.img-tabs button'));
+  if(id){
+    const a=albums.find(x=>x.id===id);if(!a)return;
+    if(a.owner!==curUser){toast('You can only edit your own albums','⚠');return;}
+    document.getElementById('fmT').innerHTML='⛧ Edit Album ⛧';
+    document.getElementById('subBtn').textContent='⛧ Update ⛧';
+    document.getElementById('eId').value=a.id;
+    document.getElementById('fName').value=a.name;
+    document.getElementById('fBand').value=a.band;
+    document.getElementById('fGenre').value=a.genre||'';
+    document.getElementById('fYear').value=a.year||'';
+    document.getElementById('fDesc').value=a.desc||'';
+    if(a.image){
+      if(a.image.startsWith('data:')){document.getElementById('imgD').value=a.image;document.getElementById('imgP').src=a.image;}
+      else{document.getElementById('fUrl').value=a.image;swImg('url',document.querySelectorAll('.img-tabs button')[1]);document.getElementById('imgP').src=a.image;}
+      document.getElementById('imgP').style.display='block';
+    }
+    (a.links||[]).forEach(l=>addLink(l));
+  }else{
+    document.getElementById('fmT').innerHTML='⛧ Summon New Album ⛧';
+    document.getElementById('subBtn').textContent='⛧ Summon ⛧';
+    addLink();
+  }
+  opOv('fmOv');
+}
+
+function addLink(v){
+  const c=document.getElementById('linksC'),r=document.createElement('div');
+  r.className='lr';
+  r.innerHTML=`<input type="url" placeholder="https://youtube.com/..." value="${v?esc(v):''}"><button type="button" class="lr-rm" onclick="this.parentElement.remove()">✕</button>`;
+  c.appendChild(r);
+}
+
+function saveA(e){
+  e.preventDefault();
+  const id=document.getElementById('eId').value;
+  const img=document.getElementById('imgD').value||document.getElementById('fUrl').value.trim()||'';
+  const data={
+    id:id||uid(),image:img,
+    name:document.getElementById('fName').value.trim(),
+    band:document.getElementById('fBand').value.trim(),
+    genre:document.getElementById('fGenre').value.trim(),
+    year:document.getElementById('fYear').value.trim(),
+    desc:document.getElementById('fDesc').value.trim(),
+    links:[...document.querySelectorAll('#linksC input')].map(i=>i.value.trim()).filter(Boolean),
+    visible:true,owner:curUser
+  };
+  if(!data.name||!data.band){toast('Fill required fields','⚠');return false;}
+  // Auto add genre
+  if(data.genre&&!genres.some(g=>g.toLowerCase()===data.genre.toLowerCase())){
+    genres.push(data.genre);
+  }
+  if(id){
+    const i=albums.findIndex(a=>a.id===id);
+    if(i>-1){data.visible=albums[i].visible;data.owner=albums[i].owner;albums[i]=data;}
+    toast('"'+data.name+'" updated');
+  }else{albums.unshift(data);toast('"'+data.name+'" summoned');}
+  save();renderGenreBar();R();clOv('fmOv');return false;
+}
+
+// DETAIL
+function showD(id){
+  const a=albums.find(x=>x.id===id);if(!a)return;
+  const m=document.getElementById('dtM');
+  const isOwner=a.owner===curUser;
+  const lh=(a.links&&a.links.length)?a.links.map(l=>{
+    let ic='🔗',lb=l;
+    try{const u=new URL(l),h=u.hostname.toLowerCase();
+    if(h.includes('youtube')||h.includes('youtu.be')){ic='▶️';lb='YouTube';}
+    else if(h.includes('spotify')){ic='🎵';lb='Spotify';}
+    else if(h.includes('bandcamp')){ic='🎶';lb='Bandcamp';}
+    else if(h.includes('soundcloud')){ic='☁️';lb='SoundCloud';}
+    else if(h.includes('apple')){ic='🍎';lb='Apple Music';}
+    else lb=u.hostname;}catch(e){}
+    return`<a class="d-link" href="${esc(l)}" target="_blank" rel="noopener"><span class="d-link-i">${ic}</span>${esc(lb)}</a>`;
+  }).join(''):'<div class="d-no">No links added</div>';
+
+  m.innerHTML=`
+  <button class="mc" onclick="clOv('dtOv')">✕</button>
+  ${a.image?`<img class="d-cover" src="${esc(a.image)}" alt="" onerror="this.outerHTML='<div class=d-ph>⛧</div>'">`:'<div class="d-ph">⛧</div>'}
+  <div style="margin-bottom:12px">
+    ${a.genre?`<span class="d-genre">${esc(a.genre)}</span>`:''}
+    ${a.year?`<span class="d-year-tag">${esc(a.year)}</span>`:''}
+  </div>
+  <div class="d-title">${esc(a.name)}</div>
+  <div class="d-band">${esc(a.band)}</div>
+  <div class="d-owner-tag">⛧ Collection of ${esc(a.owner||'Unknown')}</div>
+  <div class="d-div"></div>
+  ${a.desc?`<div class="d-desc">${esc(a.desc)}</div>`:'<div class="d-no">No description</div>'}
+  <div class="d-links"><h4>☽ Listen ☾</h4>${lh}</div>
+  ${isOwner?`<div class="d-acts">
+    <button class="btn btn-ghost" onclick="openForm('${a.id}');clOv('dtOv')">✏️ Edit</button>
+    <button class="btn btn-ghost" onclick="togVis('${a.id}')">${a.visible?'🙈 Hide':'👁️ Show'}</button>
+    <button class="btn btn-danger" onclick="cfDel('${a.id}');clOv('dtOv')">☠ Delete</button>
+  </div>`:`<div style="margin-top:14px;font-size:.72rem;color:var(--text2);font-style:italic;text-align:center">This album belongs to ${esc(a.owner||'another member')}</div>`}`;
+  opOv('dtOv');
+}
+
+function togVis(id){
+  const a=albums.find(x=>x.id===id);if(!a)return;
+  a.visible=!a.visible;save();R();clOv('dtOv');
+  toast(a.visible?'Album revealed':'Album hidden');
+}
+
+function cfDel(id){
+  delId=id;const a=albums.find(x=>x.id===id);
+  document.getElementById('cfTxt').textContent=a?`"${a.name}" will be banished forever.`:'This cannot be undone.';
+  opOv('cfOv');
+}
+
+function exDel(){
+  if(!delId)return;
+  const a=albums.find(x=>x.id===delId);
+  albums=albums.filter(x=>x.id!==delId);delId=null;
+  save();renderGenreBar();R();clOv('cfOv');
+  toast(a?'"'+a.name+'" banished':'Deleted');
+}
+
+// OVERLAY
+function opOv(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function clOv(id){document.getElementById(id).classList.remove('open');if(!document.querySelector('.ov.open'))document.body.style.overflow=''}
+function clIf(e,id){if(e.target===document.getElementById(id))clOv(id)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.ov.open').forEach(o=>o.classList.remove('open'));document.body.style.overflow='';}});
+
+// TOAST
+function toast(msg,ic='⛧'){
+  const c=document.getElementById('tw'),t=document.createElement('div');
+  t.className='toast';t.innerHTML=`<span>${ic}</span>${esc(msg)}`;
+  c.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),250)},2400);
+}
+
+// INIT
+showAuth();
+</script>
+</body>
+</html>
